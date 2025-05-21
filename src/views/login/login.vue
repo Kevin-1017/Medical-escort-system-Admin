@@ -137,7 +137,7 @@ const countdownChange = () => {
       </template>
       <div class="jump-link">
         <el-link @click="handleChange" type="primary" underline>{{
-          formType ? '返回登录' : '注册账号'
+          formType ? '返回登录' : '忘记密码？注册一个新的！'
         }}</el-link>
       </div>
       <el-form
@@ -169,7 +169,7 @@ const countdownChange = () => {
           <el-input
             v-model="loginForm.validCode"
             :prefix-icon="Lock"
-            placeholder="验证码"
+            placeholder="验证码为1234"
             autocomplete="off"
           >
             <template #append>

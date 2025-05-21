@@ -14,7 +14,7 @@ http.interceptors.request.use(
     // 不需要添加token的api
     const whiteUrl = ['/login']
     const token = localStorage.getItem('token')
-    if (token && !whiteUrl.includes(config.url)) {
+    if (token && config.url && !whiteUrl.includes(config.url)) {
       config.headers['X-token'] = token
       //?
       // 临时
