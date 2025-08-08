@@ -1,10 +1,14 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+//获取路由实例，用于跳转页面
+const router = useRouter()
 //创建axios实例
 const http = axios.create({
-  // 通用请求的地址前缀
-  // baseURL: 'https://wechatopen.mynatapp.cc/v3pz',
-  baseURL: 'https:/v3pz.itndedu.com/v3pz',
+  // 教程接口地址前缀
+  // baseURL: 'https:/v3pz.itndedu.com/v3pz',
+  // 本地nest.js接口地址
+  baseURL: '/api',
   timeout: 10000, // 超时时间
 })
 
@@ -13,34 +17,36 @@ http.interceptors.request.use(
   function (config) {
     // 不需要添加token的api
     const whiteUrl = ['/login']
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('a_token')
     if (token && config.url && !whiteUrl.includes(config.url)) {
-      config.headers['X-token'] = token
-      //?
-      // 临时
-      // config.headers['auth'] = '13797053405'
+      config.headers['a_token'] = token
     }
     return config
   },
   function (error) {
-    // 对请求错误做些什么
     return Promise.reject(error)
   },
 )
 
 // 添加响应拦截器
 http.interceptors.response.use(
+  // 这里是处理成功之后，接口的响应体
   function (response) {
-    // 对于接口返回异常的数据，给用户一点提示
-    if (response.data.code === -1) {
-      ElMessage.warning(response.data.message)
-    }
-
-    return response
+    return response.data
   },
+  // 这里是处理错误之后，接口的错误响应，
   function (error) {
-    // 对响应错误做点什么
-    ElMessage.error('网络异常，请检查！')
+    console.log('error错误', error)
+    if (error.response.data.code === 777) {
+      ElMessage.error(error.response.data.message)
+    } else {
+      ElMessage.error('非业务错误，检查网络')
+    }
+    if (error.response.status === 401) {
+      localStorage.removeItem('a_token')
+      localStorage.removeItem('userInfo')
+      router.push('/login')
+    }
     return Promise.reject(error)
   },
 )

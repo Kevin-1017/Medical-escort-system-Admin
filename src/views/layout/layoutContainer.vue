@@ -23,6 +23,9 @@ import Header from '@/components/header.vue'
 <style lang="scss" scoped>
 .common-layout {
   height: 100%;
+  .el-header {
+    height: 100%;
+  }
   .el-container {
     height: 100%;
   }

@@ -1,7 +1,7 @@
 <script setup>
 import PanelHeader from '@/components/panelHeader.vue'
 import { onMounted, reactive, ref } from 'vue'
-import { authAdmin, menuSelectList, updateAuth } from '@/api/index'
+import { authAdmin, menuSelectList, updateAuth } from '@/api/auth/admin'
 import dayjs from 'dayjs'
 import { useRoute } from 'vue-router'
 
@@ -27,15 +27,14 @@ onMounted(() => {
 })
 
 // 请求列表数据
-const getListData = () => {
-  authAdmin(paginationData).then(({ data }) => {
-    const { list, total } = data.data
-    list.forEach((item) => {
-      item.create_time = dayjs(item.create_time).format('YYYY-MM-DD')
-    })
-    tableData.list = list
-    tableData.total = total
+const getListData = async () => {
+  const res = await authAdmin(paginationData)
+  const { list, total } = res.data
+  list.forEach((item) => {
+    item.create_time = dayjs(item.create_time).format('YYYY-MM-DD')
   })
+  tableData.list = list
+  tableData.total = total
 }
 
 const handleCurrentChange = (val) => {

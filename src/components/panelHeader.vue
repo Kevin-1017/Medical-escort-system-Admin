@@ -1,15 +1,15 @@
 <script setup>
-const props = defineProps({
-  info: {
-    type: Object,
-  },
-})
+// const props = defineProps({
+//   info: {
+//     type: Object,
+//   },
+// })
 </script>
 <template>
   <div class="panel-heading">
     <div class="panel-lead">
-      <div class="title">{{ props.info.meta.name }}</div>
-      <p class="description">{{ props.info.meta.describe }}</p>
+      <!-- <div class="title">{{ props.info.meta.name }}</div>
+      <p class="description">{{ props.info.meta.describe }}</p> -->
     </div>
   </div>
 </template>

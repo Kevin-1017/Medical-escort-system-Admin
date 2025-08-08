@@ -1,14 +1,41 @@
 <script setup>
 import treemenu from './treemenu.vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ref, watch } from 'vue'
-import { useHeaderStore } from '@/stores'
+import { useRoute } from 'vue-router'
+import { onMounted, ref, watch } from 'vue'
+import { useHeaderStore, useMenuStore } from '@/stores'
 import { storeToRefs } from 'pinia'
-
+import { updateMenu } from '@/hooks'
 const headerStore = useHeaderStore()
+const menuStore = useMenuStore()
 //获取当前路由信息
 const route = useRoute()
 const activePath = ref(route.path)
+//正确解构响应式状态,storeToRefs 会保持响应性，将 state 转换为 isCollapse 的 ref 对象
+const { state: isCollapse } = storeToRefs(headerStore)
+
+const menuData = ref([])
+// 将数据获取逻辑移到 onMounted 中
+onMounted(async () => {
+  try {
+    // 从 localStorage 获取用户信息，添加空值检查
+    const userInfo = window.localStorage.getItem('userInfo')
+    if (!userInfo) {
+      console.error('用户信息不存在')
+      return
+    }
+
+    const userInfoObj = JSON.parse(userInfo)
+    if (!userInfoObj.role) {
+      console.error('用户角色信息不存在')
+      return
+    }
+    updateMenu(userInfoObj.role)
+    menuData.value = menuStore.accessibleMenuList
+  } catch (error) {
+    console.error('获取菜单数据失败:', error)
+  }
+})
+
 // 监听路由变化，动态更新 activePath
 watch(
   () => route.path,
@@ -16,18 +43,18 @@ watch(
     activePath.value = newPath
   },
 )
-//正确解构响应式状态,storeToRefs 会保持响应性，将 state 转换为 isCollapse 的 ref 对象
-const { state: isCollapse } = storeToRefs(headerStore)
-
-//获取router实例
-const router = useRouter()
-//拿到 / 目录数据
-const menuData = ref(router.options.routes[1].children)
+// 监听 accessibleMenuList 的变化，确保 menuData 实时更新
+watch(
+  () => menuStore.accessibleMenuList,
+  (newMenuList) => {
+    menuData.value = newMenuList
+  },
+  { deep: true },
+)
 </script>
 
 <template>
   <div class="menu-container" :class="{ 'is-collapsed': isCollapse }">
-    <!-- :collapse-transition="false" 禁用Element内置动画 -->
     <el-menu
       active-text-color="#58b2dc"
       background-color="#1a2f3b"
@@ -41,8 +68,8 @@ const menuData = ref(router.options.routes[1].children)
       <div class="projectName">
         <span>{{ isCollapse ? '' : '智护云陪诊' }}</span>
       </div>
-      <!-- 发送 / 目录数据到子组件 -->
-      <treemenu :menuData="menuData" :index="'1'"> </treemenu>
+
+      <treemenu :menuData="menuData"> </treemenu>
     </el-menu>
   </div>
 </template>

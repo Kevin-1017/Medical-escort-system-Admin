@@ -1,5 +1,14 @@
 import http from '@/utils/http'
 
+// 获取菜单数据
+export const getMenuList = () => {
+  return http.get('/menu/getMenu')
+}
+// 根据角色名获取对应菜单
+export const getMenuByName = (params: any) => {
+  return http.get('/role/getRolePermissionsByName', { params })
+}
+
 // 发送验证码
 export const getCode = (data: any) => {
   return http.post('/get/code', data)
@@ -8,21 +17,6 @@ export const getCode = (data: any) => {
 // 验证码验证
 export const authentication = (data: any) => {
   return http.post('/user/authentication', data)
-}
-
-// 登录
-export const login = (data: any) => {
-  return http.post('/login', data)
-}
-
-// 账号管理
-export const authAdmin = (params = {}) => {
-  return http.get('/auth/admin', { params })
-}
-
-// 控制台接口
-export const getControlData = (params = {}) => {
-  return http.get('/report', { params })
 }
 
 // 获取头像
@@ -43,31 +37,6 @@ export const companionList = (params: any) => {
 // 删除陪护师
 export const deleteCompanion = (data: any) => {
   return http.post('/delete/companion', data)
-}
-
-// 获取菜单权限
-export const userGetMenu = () => {
-  return http.get('/user/getmenu')
-}
-
-// 创建菜单权限
-export const userSetmenu = (data: any) => {
-  return http.post('/user/setmenu', data)
-}
-
-// 菜单列表数据
-export const menuList = (params: any) => {
-  return http.get('/menu/list', { params })
-}
-
-// 菜单权限下拉列表
-export const menuSelectList = () => {
-  return http.get('/menu/selectlist')
-}
-
-// 用户信息修改
-export const updateAuth = (data: any) => {
-  return http.post('/update/user', data)
 }
 
 // 订单列表

@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import pinia from '@/stores/index' //pinia 独立维护，就不在这里维护了，在stores/index.js中维护，这里直接使用pinia
 import App from './App.vue'
-import router from './router'
+import router from './router/index'
 import '@/assets/css/global.css' //引入全局css样式
 
 import * as ElementPlusIconsVue from '@element-plus/icons-vue' //引入element-plus图标库
@@ -13,7 +13,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 // 路由守卫，全局拦截路由
 router.beforeEach((to) => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('a_token')
   // 不是登陆页面，且token不存在
   if (to.path !== '/login' && !token) {
     return '/login'

@@ -2,15 +2,16 @@
 import { ref } from 'vue'
 import { UserFilled, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCode, authentication, login } from '@/api/index'
+import { getCode, authentication } from '@/api/index'
+import { login } from '@/api/login'
 import { useRouter } from 'vue-router'
 //import { useMenuStore } from '@/stores'
 const imgUrl = new URL('../../../public/img/login-head.png', import.meta.url).href
 
 // 表单数据
 const loginForm = ref({
-  userName: '',
-  passWord: '',
+  phoneNumber: '',
+  password: '',
   validCode: '',
 })
 
@@ -38,22 +39,25 @@ const validatePass = (rule, value, callback) => {
   }
 }
 const rules = ref({
-  userName: [{ validator: validateUser, trigger: 'blur' }],
-  passWord: [{ validator: validatePass, trigger: 'blur' }],
+  phoneNumber: [{ validator: validateUser, trigger: 'blur' }],
+  password: [{ validator: validatePass, trigger: 'blur' }],
 })
 // 提交表单
 const loginFormRef = ref()
 const router = useRouter()
-//const menuStore = useMenuStore()
+
 const submitForm = async () => {
   await loginFormRef.value.validate()
   // 当前是登录页面
-  if (!formType.value) {
-    const res = await login(loginForm.value)
-    if (res.data.code === 10000) {
+  if (formType.value === 'login') {
+    const res = await login({
+      phoneNumber: loginForm.value.phoneNumber,
+      password: loginForm.value.password,
+    })
+    if (res.code === 666) {
       // 将token放入缓存
-      localStorage.setItem('token', res.data.data.token)
-      localStorage.setItem('userInfo', JSON.stringify(res.data.data.userInfo))
+      localStorage.setItem('a_token', res.data.a_token)
+      localStorage.setItem('userInfo', JSON.stringify(res.data.userInfo))
       router.push('/')
       //const menu = await menuPermissions()
       //menu.data是一个数组
@@ -82,10 +86,10 @@ const submitForm = async () => {
   }
 }
 
-// 切换表单(0为登录，1为注册)
-const formType = ref(0)
+// 切换表单类型
+const formType = ref('login')
 const handleChange = () => {
-  formType.value = formType.value ? 0 : 1
+  formType.value = formType.value === 'login' ? 'login' : 'register'
 }
 
 // 发送短信
@@ -100,7 +104,7 @@ const countdownChange = () => {
   // 手机号正则
   const phoneReg = /^1(3[0-9]|4[01456879]|5[0-35-9]|6[2567]|7[0-8]|8[0-9]|9[0-35-9])\d{8}$/
   // 判断手机号是否正确
-  if (!loginForm.value.userName || !phoneReg.test(loginForm.value.userName)) {
+  if (!loginForm.value.phoneNumber || !phoneReg.test(loginForm.value.phoneNumber)) {
     return ElMessage({
       message: '请检查手机号是否正确',
       type: 'error',
@@ -120,7 +124,7 @@ const countdownChange = () => {
   }, 1000)
   flag = true
   console.log('发送短信')
-  getCode({ tel: loginForm.value.userName }).then(() => {})
+  getCode({ tel: loginForm.value.phoneNumber }).then(() => {})
 }
 </script>
 
@@ -137,7 +141,7 @@ const countdownChange = () => {
       </template>
       <div class="jump-link">
         <el-link @click="handleChange" type="primary" underline>{{
-          formType ? '返回登录' : '忘记密码？注册一个新的！'
+          formType === 'login' ? '返回登录' : '忘记密码？注册一个新的！'
         }}</el-link>
       </div>
       <el-form
@@ -148,40 +152,42 @@ const countdownChange = () => {
         :rules="rules"
         class="demo-ruleForm"
       >
-        <el-form-item prop="userName">
+        <el-form-item prop="phoneNumber">
           <el-input
-            v-model="loginForm.userName"
+            v-model="loginForm.phoneNumber"
             :prefix-icon="UserFilled"
             placeholder="手机号"
             autocomplete="off"
           />
         </el-form-item>
-        <el-form-item prop="passWord">
+        <el-form-item prop="password">
           <el-input
-            v-model="loginForm.passWord"
+            v-model="loginForm.password"
             :prefix-icon="Lock"
-            type="passWord"
+            type="password"
             placeholder="密码"
             autocomplete="off"
           />
         </el-form-item>
-        <el-form-item v-if="formType" prop="validCode">
-          <el-input
-            v-model="loginForm.validCode"
-            :prefix-icon="Lock"
-            placeholder="验证码为1234"
-            autocomplete="off"
-          >
-            <template #append>
-              <span @click="countdownChange" style="cursor: pointer">{{
-                countdown.validText
-              }}</span>
-            </template>
-          </el-input>
-        </el-form-item>
+        <template v-if="formType === 'register'">
+          <el-form-item prop="validCode">
+            <el-input
+              v-model="loginForm.validCode"
+              :prefix-icon="Lock"
+              placeholder="验证码为1234"
+              autocomplete="off"
+            >
+              <template #append>
+                <span @click="countdownChange" style="cursor: pointer">{{
+                  countdown.validText
+                }}</span>
+              </template>
+            </el-input>
+          </el-form-item>
+        </template>
         <el-form-item>
           <el-button :style="{ width: '100%' }" type="primary" @click="submitForm(loginFormRef)">
-            {{ formType ? '注册账号' : '登录' }}
+            {{ formType === 'login' ? '登录' : '注册' }}
           </el-button>
         </el-form-item>
       </el-form>
