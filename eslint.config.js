@@ -28,6 +28,8 @@ export default [
     rules: {
       // 关闭props解构警告（Vue3 setup语法）
       'vue/no-setup-props-destructure': 'off',
+      // 允许未使用的带下划线的变量
+      'no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
       // 关闭组件名必须多单词的警告
       'vue/multi-word-component-names': 'off',
       // 其他常用规则（示例）

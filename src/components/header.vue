@@ -1,10 +1,14 @@
 <script setup>
-import { useHeaderStore } from '@/stores'
+import { useHeaderStore, useUserStore, useMenuStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { Expand, Fold } from '@element-plus/icons-vue' // 明确导入图标组件
 import { useRouter, useRoute } from 'vue-router'
 import { nextTick } from 'vue' // 明确导入 nextTick
+
+const userStore = useUserStore()
 const headerStore = useHeaderStore()
+const menuStore = useMenuStore()
+
 //点击按钮切换侧边栏状态
 const changeState = () => {
   headerStore.changeState()
@@ -38,14 +42,14 @@ const closeTab = async (item, index) => {
 }
 const handleClick = (command) => {
   if (command === 'logout') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userInfo')
+    localStorage.removeItem('a_token')
+    headerStore.reset()
+    userStore.reset()
+    menuStore.reset()
     router.push('/login')
   }
 }
-const userInfo = localStorage.getItem('userInfo')
-  ? JSON.parse(localStorage.getItem('userInfo'))
-  : {}
+const userInfo = userStore.userInfo
 </script>
 
 <template>
@@ -56,7 +60,6 @@ const userInfo = localStorage.getItem('userInfo')
         <component :is="isCollapse ? Expand : Fold" />
       </el-icon>
       <ul>
-        <!-- 遍历tab数组，生成li元素，tab是存储的meta信息 -->
         <li v-for="(item, index) in tab" :key="item.path">
           <el-icon size="15"><component :is="item.icon" /></el-icon>
           <!-- 使用 router-link 进行导航，to 属性绑定 item.path  -->
@@ -70,7 +73,7 @@ const userInfo = localStorage.getItem('userInfo')
     <el-dropdown @command="handleClick">
       <div class="el-dropdown-link">
         <el-avatar :src="userInfo.avatar" />
-        <p class="username">{{ userInfo.name }}</p>
+        <p class="username">{{ userInfo.phoneNumber }}</p>
       </div>
       <template #dropdown>
         <el-dropdown-menu>

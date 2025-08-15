@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
+// import vueDevTools from 'vite-plugin-vue-devtools'
 //element plus按需引入
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -13,7 +13,7 @@ import ElementPlus from 'unplugin-element-plus/vite'
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    // vueDevTools(),
     AutoImport({
       resolvers: [ElementPlusResolver()],
     }),
@@ -25,6 +25,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000/medical', // 你的后端服务地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''), // 移除路径前缀/api
+      },
     },
   },
 })

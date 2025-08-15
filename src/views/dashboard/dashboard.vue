@@ -1,8 +1,8 @@
 <script setup>
 import PanelHeader from '@/components/panelHeader.vue'
 import { ref, onMounted } from 'vue'
-// import * as echarts from 'echarts'
-import { getControlData } from '@/api/index'
+import * as echarts from 'echarts'
+import { getControlData } from '@/api/dashboard'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -18,11 +18,10 @@ const typeList = ref([])
 const imgs = ['/img/dzf.png', '/img/dfw.png', '/img/ywc.png', '/img/yqx.png']
 const color = ['#F05050', '#7266BA', '#23B7E5', '#27C24C']
 const getData = async () => {
-  let res = await getControlData()
-  console.log(res, 'res')
-  let data = res?.data?.data
-  if (data) {
-    user.value = data.user
+  const res = await getControlData()
+
+  if (res.code === 666) {
+    user.value.user_name = res.data.phoneNumber
     // types.value = data.types;
     types.value = [
       { state: '待支付', num: 6 },

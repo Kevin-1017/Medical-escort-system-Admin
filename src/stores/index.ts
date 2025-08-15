@@ -8,4 +8,6 @@ pinia.use(piniaPluginPersistedstate)
 export default pinia
 
 //仓库统一导出
-export * from './models/header.js'
+export * from './models/header'
+export * from './models/menu'
+export * from './models/user'
