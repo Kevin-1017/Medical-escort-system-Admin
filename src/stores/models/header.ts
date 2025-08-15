@@ -21,7 +21,10 @@ export const useHeaderStore = defineStore(
     const delTab = (menu: MenuItem) => {
       tab.value = tab.value.filter((item) => item.path !== menu.path) //过滤掉已删除的元素
     }
-    return { state, changeState, tab, addTab, delTab }
+    function reset() {
+      tab.value = []
+    }
+    return { state, changeState, tab, addTab, delTab, reset }
   },
   {
     persist: true, //持久化存储，即使刷新页面，数据也不会丢失

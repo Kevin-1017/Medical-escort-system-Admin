@@ -1,13 +1,15 @@
 <script setup>
 import { Plus } from '@element-plus/icons-vue'
 import { reactive, ref, onMounted, nextTick } from 'vue'
-import { getRoleList, updateRole, createRole, deleteRole } from '@/api/auth/group'
+import { getRoleList, updateRole, createRole } from '@/api/auth/group'
 import { getMenuList } from '@/api'
 import { useRoute } from 'vue-router'
 import PanelHeader from '@/components/panelHeader.vue'
 import { ElMessage } from 'element-plus'
 import { updateMenu } from '@/hooks'
+import { useUserStore } from '@/stores'
 
+const userStore = useUserStore()
 const route = useRoute()
 const permissionData = ref([])
 // 请求参数
@@ -72,14 +74,7 @@ const defaultProps = {
 
 // 选中权限
 const treeRef = ref()
-const userInfo = window.localStorage.getItem('userInfo')
-if (!userInfo) {
-  console.error('用户信息不存在')
-}
-const userInfoObj = JSON.parse(userInfo)
-if (!userInfoObj.role) {
-  console.error('用户角色信息不存在')
-}
+
 // 确认
 const confirm = async (formEl) => {
   if (!formEl) return
@@ -92,7 +87,7 @@ const confirm = async (formEl) => {
         if (id) {
           await updateRole({ id, name, permissions })
           ElMessage.success('编辑成功')
-          if (name === userInfoObj.role) {
+          if (name === userStore.userInfo.role) {
             updateMenu(name)
           }
         } else {
@@ -109,12 +104,12 @@ const confirm = async (formEl) => {
     }
   })
 }
-const onDeleteRole = async (row) => {
-  const { id } = row
-  await deleteRole(id)
-  ElMessage.success('删除成功')
-  getList()
-}
+// const onDeleteRole = async (row) => {
+//   const { id } = row
+//   await deleteRole(id)
+//   ElMessage.success('删除成功')
+//   getList()
+// }
 </script>
 <template>
   <div class="group-container">
@@ -128,7 +123,7 @@ const onDeleteRole = async (row) => {
       <el-table-column label="操作">
         <template #default="scope">
           <el-button type="primary" @click="open(scope.row)">编辑</el-button>
-          <el-popconfirm
+          <!-- <el-popconfirm
             confirm-button-text="是"
             cancel-button-text="否"
             title="是否确认删除？"
@@ -137,7 +132,7 @@ const onDeleteRole = async (row) => {
             <template #reference>
               <el-button type="danger">删除</el-button>
             </template>
-          </el-popconfirm>
+          </el-popconfirm> -->
         </template>
       </el-table-column>
     </el-table>

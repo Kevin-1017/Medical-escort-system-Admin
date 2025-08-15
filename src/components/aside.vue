@@ -2,9 +2,11 @@
 import treemenu from './treemenu.vue'
 import { useRoute } from 'vue-router'
 import { onMounted, ref, watch } from 'vue'
-import { useHeaderStore, useMenuStore } from '@/stores'
+import { useHeaderStore, useMenuStore, useUserStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { updateMenu } from '@/hooks'
+
+const userStore = useUserStore()
 const headerStore = useHeaderStore()
 const menuStore = useMenuStore()
 //获取当前路由信息
@@ -17,19 +19,9 @@ const menuData = ref([])
 // 将数据获取逻辑移到 onMounted 中
 onMounted(async () => {
   try {
-    // 从 localStorage 获取用户信息，添加空值检查
-    const userInfo = window.localStorage.getItem('userInfo')
-    if (!userInfo) {
-      console.error('用户信息不存在')
-      return
+    if (menuStore.accessibleMenuList.length === 0) {
+      updateMenu(userStore.userInfo.role)
     }
-
-    const userInfoObj = JSON.parse(userInfo)
-    if (!userInfoObj.role) {
-      console.error('用户角色信息不存在')
-      return
-    }
-    updateMenu(userInfoObj.role)
     menuData.value = menuStore.accessibleMenuList
   } catch (error) {
     console.error('获取菜单数据失败:', error)

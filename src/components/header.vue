@@ -1,11 +1,14 @@
 <script setup>
-import { useHeaderStore, useMenuStore } from '@/stores'
+import { useHeaderStore, useUserStore, useMenuStore } from '@/stores'
 import { storeToRefs } from 'pinia'
 import { Expand, Fold } from '@element-plus/icons-vue' // 明确导入图标组件
 import { useRouter, useRoute } from 'vue-router'
 import { nextTick } from 'vue' // 明确导入 nextTick
+
+const userStore = useUserStore()
 const headerStore = useHeaderStore()
 const menuStore = useMenuStore()
+
 //点击按钮切换侧边栏状态
 const changeState = () => {
   headerStore.changeState()
@@ -40,14 +43,13 @@ const closeTab = async (item, index) => {
 const handleClick = (command) => {
   if (command === 'logout') {
     localStorage.removeItem('a_token')
-    localStorage.removeItem('userInfo')
-    menuStore.clearMenu()
+    headerStore.reset()
+    userStore.reset()
+    menuStore.reset()
     router.push('/login')
   }
 }
-const userInfo = localStorage.getItem('userInfo')
-  ? JSON.parse(localStorage.getItem('userInfo'))
-  : {}
+const userInfo = userStore.userInfo
 </script>
 
 <template>

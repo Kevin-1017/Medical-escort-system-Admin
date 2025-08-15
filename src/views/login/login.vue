@@ -2,10 +2,11 @@
 import { ref } from 'vue'
 import { UserFilled, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getCode, authentication } from '@/api/index'
-import { login } from '@/api/login'
+import { login, register } from '@/api/login'
 import { useRouter } from 'vue-router'
-//import { useMenuStore } from '@/stores'
+import { useUserStore } from '@/stores'
+
+const userStore = useUserStore()
 const imgUrl = new URL('../../../public/img/login-head.png', import.meta.url).href
 
 // 表单数据
@@ -57,31 +58,14 @@ const submitForm = async () => {
     if (res.code === 666) {
       // 将token放入缓存
       localStorage.setItem('a_token', res.data.a_token)
-      localStorage.setItem('userInfo', JSON.stringify(res.data.userInfo))
+      userStore.userInfo = res.data.userInfo
       router.push('/')
-      //const menu = await menuPermissions()
-      //menu.data是一个数组
-      //menuStore.setMenuList(menu.data)
-      //在路由实例里加入路由，名为main
-
-      //   .then(({ data: permission }) => {
-      //     // console.log(permission.data, 'permission')
-      //     store.commit('dynamicMenu', permission.data)
-      //     console.log(toRaw(routerList.value), 'routerList')
-      //     console.log(router)
-      //     toRaw(routerList.value).forEach((item) => {
-      //       router.addRoute('main', item)
-      //     })
-      //   })
-      //   .then(() => {
-      //     router.push('/')
-      //   })
     }
   } else {
     // 如果是注册页面
-    authentication(loginForm.value).then(() => {
+    register(loginForm.value).then(() => {
       ElMessage.success('注册成功！请登录')
-      formType.value = 0
+      formType.value = 'login'
     })
   }
 }
@@ -89,7 +73,7 @@ const submitForm = async () => {
 // 切换表单类型
 const formType = ref('login')
 const handleChange = () => {
-  formType.value = formType.value === 'login' ? 'login' : 'register'
+  formType.value = formType.value === 'login' ? 'register' : 'login'
 }
 
 // 发送短信
@@ -124,7 +108,7 @@ const countdownChange = () => {
   }, 1000)
   flag = true
   console.log('发送短信')
-  getCode({ tel: loginForm.value.phoneNumber }).then(() => {})
+  // getCode({ tel: loginForm.value.phoneNumber }).then(() => {})
 }
 </script>
 
@@ -141,7 +125,7 @@ const countdownChange = () => {
       </template>
       <div class="jump-link">
         <el-link @click="handleChange" type="primary" underline>{{
-          formType === 'login' ? '返回登录' : '忘记密码？注册一个新的！'
+          formType === 'login' ? '忘记密码？注册一个新的' : '返回登录'
         }}</el-link>
       </div>
       <el-form

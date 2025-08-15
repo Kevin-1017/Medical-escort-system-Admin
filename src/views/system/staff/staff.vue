@@ -1,18 +1,12 @@
 <script setup>
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { Plus, Delete, InfoFilled } from '@element-plus/icons-vue'
-import { photoList, companion, companionList, deleteCompanion } from '@/api/index'
+import { companionList, photoList, companion, deleteCompanion } from '@/api/system/staff'
 import dayjs from 'dayjs'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import PanelHeader from '@/components/panelHeader.vue'
 const route = useRoute()
-onMounted(() => {
-  photoList().then(({ data }) => {
-    fileList = data.data
-  })
-  getList()
-})
 
 // 请求参数
 const paginationData = reactive({
@@ -26,24 +20,24 @@ const tableData = reactive({
   total: 0,
 })
 
-const getList = () => {
-  companionList(paginationData).then(({ data }) => {
-    const { list, total } = data.data
-    list.forEach((item) => {
-      item.create_time = dayjs(item.create_time).format('YYYY-MM-DD')
-    })
-    tableData.list = list
-    tableData.total = total
+const getList = async () => {
+  const res = await companionList(paginationData)
+  const { list, total } = res.data
+  list.forEach((item) => {
+    item.createDate = dayjs(item.createDate).format('YYYY-MM-DD')
   })
+  tableData.list = list
+  tableData.total = total
 }
 
-const dialogFormVisible = ref(false)
-const form = reactive({
-  age: 28,
-  sex: '',
-  avatar: '',
-  active: 1,
+onMounted(() => {
+  photoList().then(({ data }) => {
+    fileList = data.data
+  })
+  getList()
 })
+const dialogFormVisible = ref(false)
+const form = reactive({})
 
 // 陪护师新增/编辑
 const openModel = (rowData) => {
@@ -65,7 +59,7 @@ const dialogImgVisible = ref(false)
 // 照片墙
 let fileList = []
 const selectIndex = ref(0)
-const confrimImage = (formEl) => {
+const confirmImage = (formEl) => {
   form.avatar = fileList[selectIndex.value].url
   dialogImgVisible.value = false
   formEl.validateField('avatar')
@@ -91,8 +85,9 @@ const confirm = async (formEl) => {
   if (!formEl) return
   await formEl.validate((valid) => {
     if (valid) {
-      companion(form).then(({ data }) => {
-        if (data.code === 10000) {
+      const { createDate: _, ...submitFom } = form
+      companion(submitFom).then((res) => {
+        if (res.code === 666) {
           ElMessage.success('成功')
           beforeClose()
           getList()
@@ -109,7 +104,9 @@ const handleCurrentChange = (val) => {
 // 选中table项
 const multipleSelection = ref([])
 const handleSelectionChange = (val) => {
-  multipleSelection.value = val
+  multipleSelection.value = val.map((item) => {
+    return item.id
+  })
 }
 // 删除
 const confirmEvent = () => {
@@ -121,8 +118,9 @@ const confirmEvent = () => {
     })
   }
 
-  deleteCompanion({ id: multipleSelection.value }).then(({ data }) => {
-    if (data.code === 10000) {
+  deleteCompanion({ id: multipleSelection.value }).then((res) => {
+    if (res.code === 666) {
+      ElMessage.success('删除成功')
       getList()
     }
   })
@@ -162,7 +160,7 @@ const confirmEvent = () => {
     </el-table-column>
     <el-table-column label="性别">
       <template #default="scope">
-        {{ scope.row.sex === '1' ? '男' : '女' }}
+        {{ scope.row.sex === 'male' ? '男' : '女' }}
       </template>
     </el-table-column>
     <el-table-column label="手机号" prop="mobile" />
@@ -179,7 +177,7 @@ const confirmEvent = () => {
       <template #default="scope">
         <div style="display: flex; align-items: center">
           <el-icon><Clock /></el-icon>
-          <span style="margin-left: 10px">{{ scope.row.create_time }}</span>
+          <span style="margin-left: 10px">{{ scope.row.createDate }}</span>
         </div>
       </template>
     </el-table-column>
@@ -201,13 +199,10 @@ const confirmEvent = () => {
   </div>
   <el-dialog v-model="dialogFormVisible" :before-close="beforeClose" title="陪护师" width="500">
     <el-form label-width="100px" label-position="left" :model="form" :rules="rules" ref="formRef">
-      <el-form-item v-show="false" prop="id">
-        <el-input v-model="form.id" placeholder="请输入昵称" />
-      </el-form-item>
       <el-form-item label="昵称" prop="name">
         <el-input v-model="form.name" placeholder="请输入昵称" />
       </el-form-item>
-      <el-form-item label="头像" prop="avatar">
+      <el-form-item label="头像" prop="avatar" :required="false">
         <el-button v-if="!form.avatar" @click="dialogImgVisible = true" type="primary"
           >点击上传</el-button
         >
@@ -220,8 +215,8 @@ const confirmEvent = () => {
       </el-form-item>
       <el-form-item label="性别" prop="sex">
         <el-select v-model="form.sex" placeholder="请选择性别">
-          <el-option label="男" value="1" />
-          <el-option label="女" value="2" />
+          <el-option label="男" value="male" />
+          <el-option label="女" value="female" />
         </el-select>
       </el-form-item>
       <el-form-item label="年龄" prop="age">
@@ -232,8 +227,8 @@ const confirmEvent = () => {
       </el-form-item>
       <el-form-item label="是否生效" prop="active">
         <el-radio-group v-model="form.active">
-          <el-radio :value="0">失效</el-radio>
-          <el-radio :value="1">生效</el-radio>
+          <el-radio :value="false">失效</el-radio>
+          <el-radio :value="true">生效</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
@@ -260,7 +255,7 @@ const confirmEvent = () => {
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogImgVisible = false">取消</el-button>
-        <el-button type="primary" @click="confrimImage(formRef)"> 确认 </el-button>
+        <el-button type="primary" @click="confirmImage(formRef)"> 确认 </el-button>
       </div>
     </template>
   </el-dialog>

@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
-//获取路由实例，用于跳转页面
-const router = useRouter()
+import router from '../router'
+import { useHeaderStore, useUserStore, useMenuStore } from '@/stores'
+
+const userStore = useUserStore()
+const headerStore = useHeaderStore()
+const menuStore = useMenuStore()
+
 //创建axios实例
 const http = axios.create({
   // 教程接口地址前缀
@@ -42,9 +46,11 @@ http.interceptors.response.use(
     } else {
       ElMessage.error('非业务错误，检查网络')
     }
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem('a_token')
-      localStorage.removeItem('userInfo')
+      headerStore.reset()
+      userStore.reset()
+      menuStore.reset()
       router.push('/login')
     }
     return Promise.reject(error)

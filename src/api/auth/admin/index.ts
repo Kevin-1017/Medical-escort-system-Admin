@@ -5,12 +5,7 @@ export const authAdmin = (params = {}) => {
   return http.get('/users/list', { params })
 }
 
-// 角色权限
-export const menuSelectList = () => {
-  return http.get('/role/selectlist')
-}
-
-// 用户信息修改
-export const updateAuth = (data: any) => {
-  return http.post('/update/user', data)
+// 编辑用户
+export const updateAuth = (id: number, params: any) => {
+  return http.put(`/users/update/${id}`, params)
 }
